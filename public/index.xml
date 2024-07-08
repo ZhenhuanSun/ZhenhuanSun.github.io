@@ -1,11 +1,26 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>Zhenhuan&#39;s Blog</title>
+    <title>Steven&#39;s Blog</title>
     <link>http://localhost:1313/</link>
-    <description>Recent content on Zhenhuan&#39;s Blog</description>
+    <description>Recent content on Steven&#39;s Blog</description>
     <generator>Hugo -- 0.127.0</generator>
     <language>en-us</language>
+    <lastBuildDate>Fri, 28 Jun 2024 19:41:37 -0400</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>A Note on OptNet</title>
+      <link>http://localhost:1313/posts/optnet/</link>
+      <pubDate>Fri, 28 Jun 2024 19:41:37 -0400</pubDate>
+      <guid>http://localhost:1313/posts/optnet/</guid>
+      <description>Not long ago, I came across this interesting paper, which explored the possibility of training a neural network that embeds a constrained quadratic optimization problem as one of its layers. I was immediately hooked on the idea and began exploring it in the paper. However, I wouldn&amp;rsquo;t describe the experience of reading that paper as enjoyable, mainly because the authors assumed readers were already familiar with some theorems from real analysis, and many derivation details for the results presented in the paper were missing.</description>
+    </item>
+    <item>
+      <title>About</title>
+      <link>http://localhost:1313/about/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/about/</guid>
+      <description>When you are reading papers or textbooks filled with math derivations, you probably have came across phrases like &amp;lsquo;it can be readily seen that &amp;hellip;&amp;rsquo; or &amp;lsquo;it&amp;rsquo;s obvious that &amp;hellip;&amp;rsquo;. Sometimes, the results follow are indeed obvious, but other times, you end up spending hours scratching your head and googling stuff, trying to unravel the mystery of what&amp;rsquo;s supposed to be &amp;lsquo;obvious&amp;rsquo;. If you can relate to this, then I&amp;rsquo;m sure you would understand the joy of stumbling upon an online document that thoroughly explains how the results were derived.</description>
+    </item>
   </channel>
 </rss>

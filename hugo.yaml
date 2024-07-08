@@ -1,4 +1,38 @@
 baseURL: https://example.org/
 languageCode: en-us
-title: Zhenhuan's Blog
+title: Steven's Blog
 theme: ["PaperMod"]
+
+menu:
+  main:
+    - name: About
+      url: /about/
+      weight: 10
+    - identifier: archives
+      name: Archives
+      url: /archives/
+      weight: 20
+params:
+  homeInfoParams:
+    Title: "Howdy, Strangers!"
+    Content: "Enjoy your search :)"
+  socialIcons:
+    - name: github
+      url: "https://github.com/ZhenhuanSun"
+  math: true
+markup:
+  goldmark:
+    extensions:
+      passthrough:
+        delimiters:
+          block:
+          - - \[
+            - \]
+          - - $$
+            - $$
+          inline:
+          - - \(
+            - \)
+          - - $
+            - $
+        enable: true

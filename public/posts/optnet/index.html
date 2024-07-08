@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>A Note on OptNet | Steven&#39;s Blog</title>
+<meta name="keywords" content="">
+<meta name="description" content="Not long ago, I came across this interesting paper, which explored the possibility of training a neural network that embeds a constrained quadratic optimization problem as one of its layers. I was immediately hooked on the idea and began exploring it in the paper. However, I wouldn&rsquo;t describe the experience of reading that paper as enjoyable, mainly because the authors assumed readers were already familiar with some theorems from real analysis, and many derivation details for the results presented in the paper were missing.">
+<meta name="author" content="">
+<link rel="canonical" href="http://localhost:1313/posts/optnet/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.fc220c15db4aef0318bbf30adc45d33d4d7c88deff3238b23eb255afdc472ca6.css" integrity="sha256-/CIMFdtK7wMYu/MK3EXTPU18iN7/MjiyPrJVr9xHLKY=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/optnet/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+    
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<script>
+  MathJax = {
+    tex: {
+      displayMath: [['\\[', '\\]'], ['$$', '$$']],  
+      inlineMath: [['\\(', '\\)'], ['$', '$']]      
+    }
+  };
+</script>
+  
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="Steven&#39;s Blog (Alt + H)">Steven&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/about/" title="About">
+                    <span>About</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/archives/" title="Archives">
+                    <span>Archives</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      A Note on OptNet
+    </h1>
+    <div class="post-meta"><span title='2024-06-28 19:41:37 -0400 EDT'>June 28, 2024</span>
+
+</div>
+  </header> 
+  <div class="post-content"><p>Not long ago, I came across <a href="https://proceedings.mlr.press/v70/amos17a/amos17a.pdf">this interesting paper</a>, which explored the possibility of training a neural network
+that embeds a constrained quadratic optimization problem as one of its layers. I was immediately hooked on the idea
+and began exploring it in the paper. However, I wouldn&rsquo;t describe the experience of reading that paper as
+enjoyable, mainly because the authors assumed readers were already familiar with some theorems from real analysis, and
+many derivation details for the results presented in the paper were missing. I did a lot of research and homework to
+equip myself with the necessary knowledge to understand that paper. The whole process took several weeks, and it is this
+lengthy process that drives me to write this blog, which provides detailed explanations of how the results were derived,
+for people who also have interest in this paper.</p>
+<p>Before you start, I highly recommend reading <a href="https://implicit-layers-tutorial.org/">this blog</a> first (chapter 1 should
+be enough). It provides a clear explanation of the Implicit Function Theorem, a mathematical tool that is essential for
+grasping the idea behind the paper. In addition, you might want to do some review on constrained optimization theory.</p>
+<h2 id="1-implicit-function">1. Implicit function<a hidden class="anchor" aria-hidden="true" href="#1-implicit-function">#</a></h2>
+<p>We started by noticing the problem
+</p>
+\[
+\begin{aligned}
+& \underset{z}{\text{minimize}}
+& & \frac{1}{2}z^TQz + q^T z \\
+& \text{subject to}
+& & Az = b, \\ 
+& & & Gz \leq h, \\
+\end{aligned}
+\]
+<p>
+is a convex optimization problem and the KKT conditions are sufficient for global
+optimality. Thus, at optimality, we have
+</p>
+\[
+\begin{bmatrix}
+Qz^* + q + A^T v^* + G^T \lambda^* \\
+D(\lambda^*)(Gz^* - h) \\
+Az^* - b
+\end{bmatrix} = \mathbf{0},
+\]
+<p>
+where $D(\cdot)$ creates a diagonal matrix from a vector and $z^*$, $\lambda^*$, $v^*$, are the optimal primal and dual
+variables. Observe that $\{Q, q, A, b, G, h\}$ are parameters of the above vector-valued function, and for each
+different set of parameters, there exists a unique set of optimal primal and dual variables. By leveraging the implicit
+function theorem, an implicit function $F(x, \theta^*(x))$ can be defined as
+</p>
+\[
+\label{eq:implicit function}
+F(x, \theta^*(x)) =
+\begin{bmatrix}
+Qz^* + q + A^T v^* + G^T \lambda^* \\
+D(\lambda^*)(Gz^* - h) \\
+Az^* - b
+\end{bmatrix}
+\in \mathbb{R}^{n+m+p},
+\]
+<p>
+with $x$ and $\theta^*(x)$ defined as
+</p>
+\[
+\begin{aligned}
+&x = \left[ \text{vec}(Q)^T, q^T, \text{vec}(A)^T, b^T, \text{vec}(G)^T, h^T \right]^T \in
+\mathbb{R}^{n^2+n+mn+m+pn+p} \\
+&\theta^*(x) = \left[ z^*(x), \lambda^*(x), v^*(x) \right]^T \in \mathbb{R}^{n+m+p}.
+\end{aligned}
+\]
+<p>
+To align with the function definition in the implicit function theorem and to avoid dealing with tensors in matrix
+differentiation, we have vectorized the matrices to vectors in a column-major order. For example, matrix $Q$ is
+expressed as a column vector $\text{vec}(Q) =
+\left[ Q_{11}, \ldots Q_{n1}, Q_{12}, \ldots Q_{n2} \ldots Q_{1n} \ldots Q_{nn}\right]^T \in \mathbb{R}^{n^2}$.
+Given that $F(x, \theta^*(x)) = \mathbf{0}$ at optimality, by differentiating both sides with respect to $x$ we obtain
+</p>
+\[
+\frac{\partial F(x, \theta^*(x))}{\partial x} = \frac{\partial F(x, \theta^*)}{\partial x} + \frac{\partial F(x,
+\theta^*)}{\partial \theta^*} \frac{\partial \theta^*(x)}{\partial x} = \mathbf{0}.
+\]
+<p>
+The essential components $\frac{\partial \theta^*(x)}{\partial x}$ required for gradient computation can therefore be
+obtained by
+</p>
+\[
+\label{eq:implicit gradient}
+\frac{\partial \theta^*(x)}{\partial x} = - \left( \frac{\partial F(x, \theta^*)}{\partial \theta^*} \right)^{-1}
+\frac{\partial F(x, \theta^*)}{\partial x}.
+\]
+<h2 id="2-component-derivation">2. Component Derivation<a hidden class="anchor" aria-hidden="true" href="#2-component-derivation">#</a></h2>
+<p>In this section, we provide detailed derivation for each component of the last equation above. By applying
+basic matrix calculus results, we immediately obtain
+</p>
+\[
+\frac{\partial F(x, \theta^*)}{\partial \theta^*} =
+\begin{bmatrix}
+Q & G^T & A^T \\
+D(\lambda^*)G & D(Gz^*-h) & 0 \\
+A & 0 & 0
+\end{bmatrix}.
+\]
+<p>
+The exact form of $\frac{\partial \theta^*(x)}{\partial x}$ cannot be directly derived due to its implicit nature, and
+the derivation of $\frac{\partial \theta^*(x)}{\partial x}$ requires a component-wise treatment. We find it beneficial
+to expand them in vector and matrix formats to aid readers&rsquo; understanding of subsequent content. Therefore, we express
+$\frac{\partial \theta^*(x)}{\partial x}$ as</p>
+\[
+\frac{\partial \theta^*(x)}{\partial x} = 
+\begin{bmatrix}
+\frac{\partial z^*(x)}{\partial x} \\
+\frac{\partial \lambda^*(x)}{\partial x} \\
+\frac{\partial v^*(x)}{\partial x}
+\end{bmatrix}=
+\begin{bmatrix}
+\frac{\partial z^*(x)}{\partial \text{vec}(Q)} & \cdots & \frac{\partial z^*(x)}{\partial h} \\
+\frac{\partial \lambda^*(x)}{\partial \text{vec}(Q)} & \cdots & \frac{\partial \lambda^*(x)}{\partial h} \\
+\frac{\partial v^*(x)}{\partial \text{vec}(Q)} & \cdots & \frac{\partial v^*(x)}{\partial h}
+\end{bmatrix}.
+\]
+<p>
+Similarly, the vector and matrix expansion for $\frac{\partial F(x, \theta^*)}{\partial x}$ is expressed as
+</p>
+\[
+\label{eq:parameter matrix}
+\frac{\partial F(x, \theta^*)}{\partial x} = 
+\begin{bmatrix}
+\frac{\partial F_1(x, \theta^*)}{\partial x} \\
+\frac{\partial F_2(x, \theta^*)}{\partial x} \\
+\frac{\partial F_3(x, \theta^*)}{\partial x}
+\end{bmatrix} =
+\begin{bmatrix}
+\frac{\partial F_1(x, \theta^*)}{\partial \text{vec}(Q)} & \cdots & \frac{\partial F_1(x, \theta^*)}{\partial h} \\
+\frac{\partial F_2(x, \theta^*)}{\partial \text{vec}(Q)} & \cdots & \frac{\partial F_2(x, \theta^*)}{\partial h} \\
+\frac{\partial F_3(x, \theta^*)}{\partial \text{vec}(Q)} & \cdots & \frac{\partial F_3(x, \theta^*)}{\partial h}
+\end{bmatrix},
+\]
+<p>
+where $F_1(x, \theta^*)$, $F_2(x, \theta^*)$, and $F_3(x, \theta^*)$ correspond to the $1_{st}$, $2_{nd}$, and $3_{rd}$
+rows of function $F(x, \theta^*(x))$. Now, we perform derivation for each component of the last matrix above.</p>
+<h3 id="f_1x-theta">$F_1(x, \theta^*)$<a hidden class="anchor" aria-hidden="true" href="#f_1x-theta">#</a></h3>
+<p>We immediately notice that in the $1_{st}$ row of matrix $\frac{\partial F(x, \theta^*)}{\partial x}$
+</p>
+\[
+\begin{aligned}
+\frac{\partial F_1(x, \theta^*)}{\partial q} &= \frac{\partial q}{\partial q} = I \\
+\frac{\partial F_1(x, \theta^*)}{\partial b} &= \frac{\partial F_1(x, \theta^*)}{\partial h} = 0.
+\end{aligned}
+\]
+<p>
+$\frac{\partial F_1(x, \theta^*)}{\partial \text{vec}(Q)}$ can be expressed as
+</p>
+\[
+\frac{\partial Qz^*}{\partial \text{vec}(Q)} =
+\begin{bmatrix}
+\frac{\partial (Qz^*)_1}{\partial \text{vec}(Q)} \\
+\vdots \\
+\frac{\partial (Qz^*)_n}{\partial \text{vec}(Q)}
+\end{bmatrix} =
+\begin{bmatrix}
+\frac{\partial (Qz^*)_1}{\partial Q_{11}} & \cdots & \frac{\partial (Qz^*)_1}{\partial Q_{nn}} \\
+\vdots & \ddots & \vdots \\
+\frac{\partial (Qz^*)_n}{\partial Q_{11}} & \cdots & \frac{\partial (Qz^*)_n}{\partial Q_{nn}}
+\end{bmatrix}.
+\]
+<p>
+The partial derivative of each component of this matrix can be expressed compactly as
+</p>
+\[
+\frac{\partial (Qz^*)_i}{\partial Q_{jk}} = \frac{\partial \sum_{\ell=1}^{n} Q_{i\ell} z^*_\ell}{\partial Q_{jk}} = 
+\begin{cases} 
+z^*_k & \text{if } i = j \\
+0 & \text{otherwise}
+\end{cases},
+\]
+<p>
+resulting in a matrix of form
+</p>
+\[
+\begin{bmatrix}
+z^*_1  & 0      & \cdots & 0      & \cdots & z^*_n  & 0      & \cdots & 0       \\
+0      & z^*_1  & \cdots & 0      & \cdots & 0      & z^*_n  & \cdots & 0       \\
+\vdots & \vdots & \ddots & \vdots & \ddots & \vdots & \vdots & \ddots & \vdots  \\
+0      & 0      & \cdots & z^*_1  & \cdots & 0      & 0      & \cdots & z^*_n   \\
+\end{bmatrix}.
+\]
+<p>
+By using Kronecker product, we can express this matrix as
+</p>
+\[
+\frac{\partial F_1(x, \theta^*)}{\partial \text{vec}(Q)} = (z^*)^T \otimes I_n \in \mathbb{R}^{n \times n^2}.
+\]
+<p>
+$\frac{\partial F_1(x, \theta^*)}{\partial \text{vec}(A)}$ can be expressed as
+</p>
+\[
+\frac{\partial A^T v^*}{\partial \text{vec}(A)} =
+\begin{bmatrix}
+\frac{\partial (A^T v^*)_1}{\partial \text{vec}(A)} \\
+\vdots \\
+\frac{\partial (A^T v^*)_n}{\partial \text{vec}(A)}
+\end{bmatrix} =
+\begin{bmatrix}
+\frac{\partial (A^T v^*)_1}{\partial A_{11}} & \cdots & \frac{\partial (A^T v^*)_1}{\partial A_{mn}} \\
+\vdots & \ddots & \vdots \\
+\frac{\partial (A^T v^*)_n}{\partial A_{11}} & \cdots & \frac{\partial (A^T v^*)_n}{\partial A_{mn}}
+\end{bmatrix}.
+\]
+<p>
+The partial derivative of each component of this matrix can be expressed compactly as
+</p>
+\[
+\frac{\partial (A^T v^*)_i}{\partial A_{jk}} = \frac{\partial \sum_{\ell=1}^{m} A^T_{i\ell} v^*_\ell}{\partial A_{jk}} =
+\frac{\partial \sum_{\ell=1}^{m} A_{\ell i} v^*_\ell}{\partial A_{jk}} =
+\begin{cases} 
+v^*_j & \text{if } i=k \\
+0 & \text{otherwise}
+\end{cases},
+\]
+<p>
+resulting in a matrix of form
+</p>
+\[
+\begin{bmatrix}
+v^*_1  & \cdots & v^*_m  & 0      & \cdots & 0      & \cdots & 0      & \cdots & 0     \\
+0      & \cdots & 0      & v^*_1  & \cdots & v^*_m  & \cdots & 0      & \cdots & 0     \\
+\vdots & \ddots & \vdots & \vdots & \ddots & \vdots & \ddots & \vdots & \ddots & \vdots\\
+0      & \cdots & 0      & 0      & \cdots & 0      & \cdots & v^*_1  & \cdots & v^*_m \\
+\end{bmatrix}.
+\]
+<p>
+By using Kronecker product, we can express this matrix as
+</p>
+\[
+\frac{\partial F_1(x, \theta^*)}{\partial \text{vec}(A)} = I_n \otimes (v^*)^T \in \mathbb{R}^{n \times mn}.
+\]
+<p>
+Using the same derivation procedure of $\frac{\partial F_1(x, \theta^*)}{\partial \text{vec}(A)}$, we can show that
+</p>
+\[
+\frac{\partial F_1(x, \theta^*)}{\partial \text{vec}(G)} = I_n \otimes (\lambda^*)^T \in \mathbb{R}^{n \times pn}.
+\]
+<h3 id="f_2x-theta">$F_2(x, \theta^*)$<a hidden class="anchor" aria-hidden="true" href="#f_2x-theta">#</a></h3>
+<p>It can be readily seen that
+</p>
+\[
+\begin{aligned}
+\frac{\partial F_2(x, \theta^*)}{\partial \text{vec}(Q)} &= \frac{\partial F_2(x, \theta^*)}{\partial q} = \frac{\partial F_2(x, \theta^*)}{\partial \text{vec}(A)} = \frac{\partial F_2(x, \theta^*)}{\partial b} = 0 \\
+\frac{\partial F_2(x, \theta^*)}{\partial h} &= \frac{\partial D(\lambda^*)h}{\partial h} = -D(\lambda^*).
+\end{aligned}
+\]
+<p>
+$\frac{\partial F_2(x, \theta^*)}{\partial \text{vec}(G)}$ can be expressed as
+</p>
+\[
+\frac{\partial D(\lambda^*)Gz^*}{\partial \text{vec}(G)} =
+\begin{bmatrix}
+\frac{\partial \lambda^*_1(Gz^*)_1}{\partial \text{vec}(G)} \\
+\vdots \\
+\frac{\partial \lambda^*_p(Gz^*)_p}{\partial \text{vec}(G)}
+\end{bmatrix} =
+\begin{bmatrix}
+\frac{\partial \lambda^*_1(Gz^*)_1}{\partial G_{11}} & \cdots & \frac{\partial \lambda^*_1(Gz^*)_1}{\partial G_{pn}} \\
+\vdots & \ddots & \vdots \\
+\frac{\partial \lambda^*_p(Gz^*)_p}{\partial G_{11}} & \cdots & \frac{\partial \lambda^*_p(Gz^*)_p}{\partial G_{pn}}
+\end{bmatrix}.
+\]
+<p>
+The partial derivative of each component of this matrix can be expressed compactly as
+</p>
+\[
+\frac{\partial \lambda^*_i(Gz^*)_i}{\partial G_{jk}} = \frac{\partial \lambda^*_i\sum_{\ell=1}^{n} G_{i\ell} z^*_\ell}{\partial G_{jk}} = 
+\begin{cases} 
+\lambda^*_j z^*_k & \text{if } i = j \\
+0 & \text{otherwise}
+\end{cases},
+\]
+<p>
+resulting in a matrix of form
+</p>
+\[
+\begin{bmatrix}
+\lambda^*_1 z^*_1  & 0                  & \cdots & 0                  & \cdots & \lambda^*_1 z^*_n  & 0                  & \cdots & 0       \\
+0                  & \lambda^*_2 z^*_1  & \cdots & 0                  & \cdots & 0                  & \lambda^*_2 z^*_n  & \cdots & 0       \\
+\vdots             & \vdots             & \ddots & \vdots             & \ddots & \vdots             & \vdots             & \ddots & \vdots  \\
+0                  & 0                  & \cdots & \lambda^*_p z^*_1  & \cdots & 0                  & 0                  & \cdots & \lambda^*_p z^*_n   \\
+\end{bmatrix}.
+\]
+<p>
+By using Kronecker product, we can express this matrix as
+</p>
+\[
+\frac{\partial F_1(x, \theta^*)}{\partial \text{vec}(G)} = (z^*)^T \otimes D(\lambda^*) \in \mathbb{R}^{p \times pn}.
+\]
+<h3 id="f_3x-theta">$F_3(x, \theta^*)$<a hidden class="anchor" aria-hidden="true" href="#f_3x-theta">#</a></h3>
+<p>It can be readily seen that
+</p>
+\[
+\begin{aligned}
+\frac{\partial F_3(x, \theta^*)}{\partial \text{vec}(Q)} &= \frac{\partial F_3(x, \theta^*)}{\partial q} = \frac{\partial F_3(x, \theta^*)}{\partial \text{vec}(G)} = \frac{\partial F_3(x, \theta^*)}{\partial h} = 0 \\
+\frac{\partial F_3(x, \theta^*)}{\partial b} &= -\frac{\partial b}{\partial b} = -I.
+\end{aligned}
+\]
+<p>
+By employing the same derivation procedure of $\frac{\partial F_1(x, \theta^*)}{\partial \text{vec}(Q)}$, we can also show that
+</p>
+\[
+\frac{\partial F_3(x, \theta^*)}{\partial \text{vec}(A)} = (z^*)^T \otimes I_m \in \mathbb{R}^{m \times mn}.
+\]
+<h3 id="summary">Summary<a hidden class="anchor" aria-hidden="true" href="#summary">#</a></h3>
+<p>By incorporating everything derived before, we obtain following $(n+p+m) \times (n^2+n+mn+m+pn+p)$ matrix:
+</p>
+\[
+\frac{\partial F(x, \theta^*)}{\partial x} = 
+\begin{bmatrix}
+(z^*)^T \otimes I_n & I_n & I_n \otimes (v^*)^T & 0 & I_n \otimes (\lambda^*)^T & 0 \\
+0 & 0 & 0 & 0 & (z^*)^T \otimes D(\lambda^*) & -D(\lambda^*) \\
+0 & 0 & (z^*)^T \otimes I_m & -I_m & 0 & 0
+\end{bmatrix},
+\]
+<p>
+where, from left to right, each column corresponds to $\frac{\partial F(x, \theta^*)}{\partial \text{vec}(Q)}$,
+$\frac{\partial F(x, \theta^*)}{\partial q}$, $\frac{\partial F(x, \theta^*)}{\partial \text{vec}(A)}$, $\frac{\partial
+F(x, \theta^*)}{\partial b}$, $\frac{\partial F(x, \theta^*)}{\partial \text{vec}(G)}$, and $\frac{\partial F(x,
+\theta^*)}{\partial h}$, respectively.</p>
+<h2 id="3-gradient-computation">3. Gradient Computation<a hidden class="anchor" aria-hidden="true" href="#3-gradient-computation">#</a></h2>
+<p>The gradients of loss function $\ell$ with respect to optimization problem parameters $x$ are computed by employing
+chain rule. Assuming all vectors are column vectors, the gradient can be expressed as
+</p>
+\[
+\label{eq:gradient1}
+\begin{aligned}
+\nabla_x \ell &= \left( \frac{\partial \ell}{\partial \theta^*} \right)^T \frac{\partial \theta^*(x)}{\partial x} \quad (\text{row vector}) \\
+&= \left( \frac{\partial \theta^*(x)}{\partial x} \right)^T \frac{\partial \ell}{\partial \theta^*} \quad (\text{column vector}) \\
+&= -\left( \frac{\partial F(x, \theta^*)}{\partial x} \right)^T \left( \frac{\partial F(x, \theta^*)}{\partial \theta^*} \right)^{-T} \frac{\partial \ell}{\partial \theta^*},
+\end{aligned}
+\]
+<p>
+where the last equality is obtained by employing result obtained in Section 1 and
+$\frac{\partial \ell}{\partial \theta^*} = \left[ \frac{\partial \ell}{\partial z^*}, \frac{\partial \ell}{\partial
+\lambda^*}, \frac{\partial \ell}{\partial v^*} \right]^T \in \mathbb{R}^{n+p+m}$.</p>
+<p>During forward pass, only the output of optimization problem layer, i.e., the optimal primal variables $z^*$, is fed to
+next layer, therefore there are only gradients with respect to $z^*$ and $\frac{\partial \ell}{\partial \theta^*} =
+\left[ \frac{\partial \ell}{\partial z^*}, 0, 0\right]$. We define an intermediate vector
+$\left[ d_z, d_{\lambda}, d_v\right]^T$ to represent the product of $\left( \frac{\partial F(x, \theta^*)}{\partial \theta^*} \right)^{-T} \frac{\partial \ell}{\partial \theta^*}$.
+Using the results obtained in Section 2, the intermediate vector can be computed as
+</p>
+\[
+\label{eq:7}
+\begin{bmatrix}
+d_z \\
+d_{\lambda} \\
+d_v
+\end{bmatrix}
+= -
+\begin{bmatrix}
+Q & G^T & D(\lambda^*) \\
+G & D(Gz^*-h) & 0 \\
+A & 0 & 0
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+\frac{\partial \ell}{\partial z^*} \\
+0 \\
+0 \\
+\end{bmatrix},
+\]
+<p>
+which corresponds to equation (7) of the paper. In addition, the transpose of $\frac{\partial F(x, \theta^*)}{\partial
+x}$ can be expressed as
+</p>
+\[
+(\frac{\partial F(x, \theta^*)}{\partial x})^T = 
+\begin{bmatrix}
+z^* \otimes I_n & 0 & 0 \\
+I_n & 0 & 0 \\
+I_n \otimes v^* & 0 & z^* \otimes I_m \\
+0 & 0 & -I_m \\
+I_n \otimes \lambda^* & z^* \otimes D(\lambda^*) & 0 \\
+0 & -D(\lambda^*) & 0
+\end{bmatrix},
+\]
+<p>
+where we have used Kronecker product properties to perform transpose. You can visit <a href="https://en.wikipedia.org/wiki/Kronecker_product">here</a>
+for details about properties of Kronecker product. Finally, the gradients of loss function $\ell$ with respect to
+$\{\text{vec}(Q), q, \text{vec}(A), b, \text{vec}(G), h\}$ are computed by
+</p>
+\[
+\nabla_x \ell = 
+\begin{bmatrix}
+\frac{\partial \ell}{\partial \text{vec}(Q)} \\
+\vdots \\
+\frac{\partial \ell}{\partial h}
+\end{bmatrix}
+= (\frac{\partial F(x, \theta^*)}{\partial x})^T
+\begin{bmatrix}
+d_z \\
+d_{\lambda} \\
+d_v
+\end{bmatrix},
+\]
+<p>
+which can also be expressed compactly as
+</p>
+\[
+\label{eq:gradient2}
+\begin{aligned}
+\frac{\partial \ell}{\partial \text{vec}(Q)} &= (z^* \otimes I_n) d_z & \quad \frac{\partial \ell}{\partial q} &= I_n d_z = d_z \\
+\frac{\partial \ell}{\partial \text{vec}(A)} &= (I_n \otimes v^*) d_z + (z^* \otimes I_m) d_v & \quad \frac{\partial \ell}{\partial b} &= -I_m d_v = -d_v \\
+\frac{\partial \ell}{\partial \text{vec}(G)} &= (I_n \otimes \lambda^*) d_z + (z^* \otimes D(\lambda^*)) d_{\lambda} & \quad \frac{\partial \ell}{\partial h} &= -D(\lambda^*) d_{\lambda}.
+\end{aligned}
+\]
+<p>
+The second column already aligns with the second column of equation (8) in the paper. We now demonstrate that the first
+column can be further simplified to yield identical expressions too.</p>
+<p>For $\frac{\partial \ell}{\partial \text{vec}(Q)}$, we expand $(z^* \otimes I_n) d_z$ as
+</p>
+\[
+\begin{bmatrix}
+z^*_1  & 0      & \cdots & 0 \\
+0      & z^*_1  & \cdots & 0 \\
+\vdots & \vdots & \ddots & 0 \\
+0      & 0      & \cdots & z^*_1 \\
+\vdots & \vdots & \vdots & \vdots \\
+z^*_n  & 0      & \cdots & 0 \\
+0      & z^*_n  & \cdots & 0 \\
+\vdots & \vdots & \ddots & 0 \\
+0      & 0      & \cdots & z^*_n
+\end{bmatrix}
+\begin{bmatrix}
+(d_z)_1 \\
+\vdots \\
+(d_z)_n
+\end{bmatrix} = 
+\begin{bmatrix}
+z^*_1(d_z)_1 \\
+\vdots \\
+z^*_1(d_z)_n \\
+\vdots \\
+z^*_n(d_z)_1 \\
+\vdots \\
+z^*_n(d_z)_n
+\end{bmatrix}.
+\]
+<p>
+Notice that this vector can be obtained by vectorizing a matrix of form
+</p>
+\[
+\begin{bmatrix}
+(d_z)_1 z^*_1 & \cdots & (d_z)_1 z^*_n \\
+\vdots       & \ddots & \vdots \\
+(d_z)_n z^*_1 & \cdots & (d_z)_n z^*_n
+\end{bmatrix} = d_z(z^*)^T.
+\]
+<p>
+Therefore, $\frac{\partial \ell}{\partial \text{vec}(Q)} = \text{vec}(d_z(z^*)^T)$, and $\frac{\partial
+\ell}{\partial Q} = d_z(z^*)^T$ after reshaping. Moreover, the positive semidefiniteness of matrix $Q$ implies symmetry,
+which further implies $\frac{\partial \ell}{\partial \text{vec}(Q)} = \frac{\partial \ell}{\partial \text{vec}(Q^T)}$.
+Applying almost the same derivation procedure as for $\frac{\partial \ell}{\partial \text{vec}(Q)}$, we obtain
+$\frac{\partial \ell}{\partial \text{vec}(Q^T)} = (I_n \otimes z^*) d_z$, which can be expanded as
+</p>
+\[
+\begin{bmatrix}
+z^*_1  & \cdots & 0 \\
+z^*_2  & \cdots & 0 \\
+\vdots & \ddots & \vdots\\
+z^*_n  & \cdots & 0 \\
+\vdots & \ddots & \vdots\\
+0      & \cdots & z^*_1 \\
+0      & \cdots & z^*_2 \\
+\vdots & \ddots & \vdots\\
+0      & \cdots & z^*_n
+\end{bmatrix}
+\begin{bmatrix}
+(d_z)_1 \\
+\vdots \\
+(d_z)_n
+\end{bmatrix} = 
+\begin{bmatrix}
+z^*_1(d_z)_1 \\
+\vdots \\
+z^*_n(d_z)_1 \\
+\vdots \\
+z^*_1(d_z)_n \\
+\vdots \\
+z^*_n(d_z)_n
+\end{bmatrix},
+\]
+<p>
+Notice that this vector can be obtained by vectorizing a matrix of form
+</p>
+\[
+\begin{bmatrix}
+z^*_1 (d_z)_1 & \cdots & z^*_1 (d_z)_n \\
+\vdots       & \ddots & \vdots \\
+z^*_n (d_z)_1 & \cdots & z^*_n (d_z)_n
+\end{bmatrix} = z^* d_z^T.
+\]
+<p>
+Therefore, $\frac{\partial \ell}{\partial \text{vec}(Q^T)} = \text{vec}(z^* d_z^T)$, and $\frac{\partial \ell}{\partial
+Q^T} = z^* d_z^T$ after reshaping. The symmetry suggests that $\text{vec}(d_z(z^*)^T) = \text{vec}(z^* d_z^T)$ and thus
+$d_z(z^*)^T = z^* d_z^T$. By decomposing square matrix $d_z(z^*)^T$ into its symmetric and skew-symmetric part, we
+obtain
+</p>
+\[
+\begin{aligned}
+d_z(z^*)^T &= \frac{1}{2}(d_z(z^*)^T + (d_z(z^*)^T)^T) + \frac{1}{2}(d_z(z^*)^T - (d_z(z^*)^T)^T) \\
+&= \frac{1}{2}(d_z(z^*)^T + z^* d_z^T) + \frac{1}{2}(d_z(z^*)^T - z^* d_z^T) \\
+&= \frac{1}{2}(d_z(z^*)^T + z^* d_z^T),
+\end{aligned}
+\]
+<p>
+from which we can conclude that $\frac{\partial \ell}{\partial Q} = \frac{1}{2}(d_z(z^*)^T + z^* d_z^T)$.</p>
+<p>For $\frac{\partial \ell}{\partial \text{vec}(A)}$, by applying the same expansion and vectorization procedure as for
+$\frac{\partial \ell}{\partial \text{vec}(Q)}$, we obtain
+</p>
+\[
+\begin{aligned}
+\frac{\partial \ell}{\partial \text{vec}(A)} &= (I_n \otimes v^*) d_z + (z^* \otimes I_m) d_v \\
+&= vec(v^* d_z^T) + vec(d_v (z^*)^T).
+\end{aligned}
+\]
+<p>
+Therefore, $\frac{\partial \ell}{\partial A} = v^* d_z^T + d_v (z^*)^T$ after reshaping.</p>
+<p>For $\frac{\partial \ell}{\partial \text{vec}(G)}$, the derivation of the first terms follows the same procedure as
+before, while the expansion of the second term requires a slight modification. Expanding second term $(z^* \otimes D(
+\lambda^*)) d_{\lambda}$ yields
+</p>
+\[
+\begin{bmatrix}
+z^*_1 \lambda^*_1  & 0      & \cdots & 0 \\
+0      & z^*_1 \lambda^*_2  & \cdots & 0 \\
+\vdots & \vdots & \ddots & 0 \\
+0      & 0      & \cdots & z^*_1 \lambda^*_p \\
+\vdots & \vdots & \vdots & \vdots \\
+z^*_n \lambda^*_1  & 0      & \cdots & 0 \\
+0      & z^*_n \lambda^*_2  & \cdots & 0 \\
+\vdots & \vdots & \ddots & 0 \\
+0      & 0      & \cdots & z^*_n \lambda^*_p
+\end{bmatrix}
+\begin{bmatrix}
+(d_{\lambda})_1 \\
+\vdots \\
+(d_{\lambda})_p
+\end{bmatrix} = 
+\begin{bmatrix}
+z^*_1 \lambda^*_1 (d_{\lambda})_1 \\
+\vdots \\
+z^*_1 \lambda^*_p (d_{\lambda})_p \\
+\vdots \\
+z^*_n \lambda^*_1 (d_{\lambda})_1\\
+\vdots \\
+z^*_n \lambda^*_p (d_{\lambda})_p
+\end{bmatrix},
+\]
+<p>
+which is a vector that is obtained by vectorizing a matrix of form
+</p>
+\[
+\begin{aligned}
+\begin{bmatrix}
+z^*_1 \lambda^*_1 (d_{\lambda})_1 & \cdots & z^*_n \lambda^*_1 (d_{\lambda})_1 \\
+\vdots       & \ddots & \vdots \\
+z^*_1 \lambda^*_p (d_{\lambda})_p & \cdots & z^*_n \lambda^*_p (d_{\lambda})_p
+\end{bmatrix} &= 
+\begin{bmatrix}
+\lambda^*_1  & 0      & \cdots & 0 \\
+0      & \lambda^*_2  & \cdots & 0 \\
+\vdots & \vdots & \ddots & 0 \\
+0      & 0      & \cdots & \lambda^*_p \\
+\end{bmatrix}
+\begin{bmatrix}
+z^*_1 (d_{\lambda})_1 & \cdots & z^*_n (d_{\lambda})_1 \\
+\vdots       & \ddots & \vdots \\
+z^*_1 (d_{\lambda})_p & \cdots & z^*_n (d_{\lambda})_p
+\end{bmatrix} \\ 
+&= D(\lambda^*) d_{\lambda} (z^*)^T.
+\end{aligned}
+\]
+<p>
+Incorporating the first term, we obtain
+</p>
+\[
+\begin{aligned}
+\frac{\partial \ell}{\partial \text{vec}(G)} &= (I_n \otimes \lambda^*) d_z + (z^* \otimes D(\lambda^*)) d_{\lambda} \\
+&= vec(\lambda^* d_z^T) + vec(D(\lambda^*) d_{\lambda} (z^*)^T).
+\end{aligned}
+\]
+<p>
+Therefore, $\frac{\partial \ell}{\partial G} = \lambda^* d_z^T + D(\lambda^*) d_{\lambda} (z^*)^T$ after reshaping.</p>
+<h2 id="4-gradient-in-primal-dual-interior-point-method">4. Gradient in Primal-Dual Interior Point Method<a hidden class="anchor" aria-hidden="true" href="#4-gradient-in-primal-dual-interior-point-method">#</a></h2>
+<p>We first obtain the symmetrized version of matrix $K$ at optimality by scaling the $2_{nd}$ row by $D(1/s^*)$, which yields
+</p>
+\[
+K_{sym} = 
+\begin{bmatrix}
+Q & 0 & G^T & A^T \\
+0 & D(\lambda^*/s^*) & I & 0 \\
+G & I & 0 & 0 \\
+A & 0 & 0 & 0 \\
+\end{bmatrix}.
+\]
+<p>
+Here, we have used the fact that $D(\lambda^*)D(1/s^*) = D(\lambda^*/s^*)$ and $D(s^*)D(1/s^*) = I$. The introduction of
+extra slack variable $s$ does not prevent us from using equation (8) of the paper to compute backpropagated gradients.
+This can be seen by noticing
+</p>
+\[
+K_{sym} =
+\begin{bmatrix}
+d_z \\
+d_s \\
+\tilde{d}_{\lambda} \\
+d_v
+\end{bmatrix} = 
+\begin{bmatrix}
+Q d_z + G^T \tilde{d}_{\lambda} + A^T d_v \\
+D(\lambda^*/s^*) d_s + \tilde{d}_{\lambda} \\ 
+G d_z + d_s \\
+A d_z
+\end{bmatrix}.
+\]
+<p>
+Substituting $\tilde{d}_{\lambda}$ with $D(\lambda^*) d_{\lambda}$, we obtain
+</p>
+\[
+\begin{bmatrix}
+Q d_z + G^T D(\lambda^*) d_{\lambda} + A^T d_v \\
+d_s + \left(D(\lambda^*/s^*)\right)^{-1} D(\lambda^*) d_{\lambda} \\
+G d_z + d_s \\
+A d_z
+\end{bmatrix} = 
+\begin{bmatrix}
+-\frac{\partial \ell}{\partial z_{i+1}} \\
+0 \\
+0 \\
+0
+\end{bmatrix},
+\]
+<p>
+from which we can see that the $2_{nd}$ and $3_{rd}$ rows together yields
+</p>
+\[
+\begin{aligned}
+G d_z + d_s &= G d_z - \left(D(\lambda^*/s^*)\right)^{-1} D(\lambda^*) d_{\lambda} \\
+&= G d_z - D(s^*) d_{\lambda} \\
+&= G d_z + D(-s^*) d_{\lambda} \\
+&= G d_z + D(G z^* - h) d_{\lambda},
+\end{aligned}
+\]
+<p>
+and $z^* = z_{i+1}$. This means that solving equation (11) of the paper is equivalent of solving
+</p>
+\[
+\begin{bmatrix}
+Q d_z + G^T D(\lambda^*) d_{\lambda} + A^T d_v \\
+G d_z + D(G z^* - h) d_{\lambda} \\
+A d_z
+\end{bmatrix} = 
+\begin{bmatrix}
+-\frac{\partial \ell}{\partial z^*} \\
+0 \\
+0
+\end{bmatrix},
+\]
+<p>
+which is basically the equation (7) of the paper with terms rearranged.</p>
+<p>The use of primal-dual interior point method and symmetrized version of matrix $K$ allows a batch of quadratic
+optimization problems with same form of the problem the paper consider to be solved in parallel. The gradients
+computed during this optimization process can be reused to compute backward gradients using equation (11) in the paper.
+These features make OptNet training faster and more resource-efficient.</p>
+<p>The remaining part of Section 3 of the paper contains relatively more details than other parts. The three theorems are
+proved with great details in the Supplementary Material section, we therefore refer readers to the paper for more
+details.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2024 <a href="http://localhost:1313/">Steven&#39;s Blog</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>
