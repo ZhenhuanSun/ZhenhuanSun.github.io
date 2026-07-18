@@ -27,9 +27,9 @@ latest_posts:
   limit: 3 # leave blank to include all the blog posts
 ---
 
-I’m a reclusive Ph.D. student at University of Toronto, where I do research related to machine learning. 
+I’m a reclusive Ph.D. student at University of Toronto, where I do research related to machine learning.
 
-Before that, I was a quiet master student at University of Waterloo, where I worked in the field of telecommunications. 
+Before that, I was a quiet master's student at University of Waterloo, where I worked in the field of telecommunications. 
 
 And before that, I was an outgoing undergrad at McMaster University, who had no idea what to do with my life.
 
