@@ -1,0 +1,37 @@
+baseURL: https://ZhenhuanSun.github.io/
+locale: en-us
+title: Zhenhuan Sun
+theme: ["PaperMod"]
+
+# Required for rendering code blocks with rounded corners.
+pygmentsUseClasses: true
+
+params:
+  ShowCodeCopyButtons: true
+
+  homeInfoParams:
+    Title: "Howdy, stranger!"
+    Content: "Enjoy your search :)"
+
+  mainSections:
+    - posts
+
+  assets:
+    favicon: images/huan.png
+    #disableHLJS: true
+
+menu:
+  main:
+    - name: About
+      url: about
+      weight: 1
+    - name: Publications
+      url: publications
+      weight: 2
+    - name: CV
+      url: pdfs/Curriculum_Vitae_Zhenhuan_Sun.pdf
+      weight: 3
+
+caches:
+  images:
+    dir: :cacheDir/images
