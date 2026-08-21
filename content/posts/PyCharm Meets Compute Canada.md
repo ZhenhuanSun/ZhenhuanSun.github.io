@@ -2,9 +2,8 @@
 author: ["Zhenhuan Sun"]
 title: "PyCharm Meets Compute Canada"
 summary: "This guide walks through how to use PyCharm IDE with Compute Canada."
-date: 2026-08-17
+date: 2026-08-21
 ShowToc: true
-draft: true
 ---
 
 This guide walks through how to use PyCharm IDE with [Compute Canada](https://docs.alliancecan.ca/wiki/Getting_started) 
@@ -68,7 +67,6 @@ To create a project-specific virtual environment in the remote server, follow th
     
     To verify that the correct Python version has been loaded, check the Python version by running `python --version`.
 
-<!--
 3.  (Optional and Not Recommended for PyCharm) If your project requires commonly used Python packages such as `NumPy`, `SciPy`, 
     and `Matplotlib`, it may be convenient to load the `scipy-stack` module together with the Python module. However, in 
     this case, you need to make sure the `scipy-stack` module you load is compatible with the Python version you intend to 
@@ -99,19 +97,18 @@ To create a project-specific virtual environment in the remote server, follow th
     ```
 
     Although loading the `scipy-stack` module may seem convenient, it doesn't work well with PyCharm. For reasons I do not 
-    fully understand, if you load the `scipy-stack` module and follow the following steps to access remote Python interpreter, 
-    packages provided by `scipy-stack` is visible only in an SSH terminal session but not automatically visible to the remote 
+    fully understand, if you load the `scipy-stack` module and follow the steps in next section to access remote Python interpreter, 
+    the packages provided by `scipy-stack` are visible only in the remote shell but not automatically visible to the remote 
     Python interpreter configured in PyCharm.
--->
     
-3.  Navigate to your project directory on the remote server, creating one first if it does not already exist, then create 
+4.  Navigate to your project directory on the remote server, creating one first if it does not already exist, then create 
     a virtual environment named `.venv` there by running
 
     ```bash
     virtualenv --no-download .venv
     ```
     
-4.  Activate the virtual environment by running
+5.  Activate the virtual environment by running
 
     ```bash
     source .venv/bin/activate
@@ -128,7 +125,7 @@ To create a project-specific virtual environment in the remote server, follow th
     virtual environment, should include packages such as `NumPy`, `SciPy`, and `Matplotlib`, etc. Otherwise, these packages
     need to be installed separately.
 
-5.  Install packages into the virtual environment by running
+6.  Install packages into the virtual environment by running
 
     ```bash
     pip install package_name --no-index
@@ -138,8 +135,24 @@ To create a project-specific virtual environment in the remote server, follow th
     I observe, in some cases, running this is noticeably faster than running `pip install package_name`.
 
 After creating the virtual environment, run `deactivate` to exit it. To reuse it later, navigate to the project directory 
-on the remote cluster and reactivate the environment. Also see [this tutorial](https://docs.alliancecan.ca/wiki/Python) for more details on creating and using 
-a virtual environment on Compute Canada clusters.
+on the remote cluster and reactivate the environment. Although the official Compute Canada tutorial recommends loading
+the same modules that were used to create the virtual environment before reactivating it, I did not find this step necessary
+when using the remote interpreter in PyCharm. For example, if modules `python/3.10.13` and `scipy-stack/2025a` were loaded 
+when created the virtual environment, the tutorial recommends running
+
+```bash
+module load python/3.10.13 scipy-stack/2025a
+```
+
+before reactivating the environment with
+
+```bash
+source your_project_directory/.venv/bin/activate
+```
+
+However, whether these two modules are loaded or not, the packages provided by `scipy-stack` module are not visible to 
+the remote interpreter configured in PyCharm, and the Python interpreter in the virtual environment will have version 3.10.13. 
+See [this tutorial](https://docs.alliancecan.ca/wiki/Python) for more details on creating and using a virtual environment on Compute Canada clusters.
 
 <!--
 load the same modules used to create it then reactivate it from the project directory. For example, if modules `python/3.10.13` 
@@ -210,12 +223,52 @@ Once multiplexing is enabled, establish an SSH connection to the cluster in term
  
 3.  Check `Select existing` option for the environment, select `Python` as the interpreter type, and paste the copied path 
     into the `Python path` field. Then expand `Target-Specific Properties` and, under `Sync folders`, set the remote path 
-    to your project directory on the remote cluster.
+    to your project directory on the remote cluster. Also check the `Automatically upload project files to the server` option.
 
-After these steps, files in your local project directory will be automatically uploaded to the directory in the remote cluster.
-Go to `Settings -> Build, Execution, Deployment -> Deployment -> Options` to customize what files to be uploaded and when 
-files should be uploaded. To download files from remote cluster, go to `Tools -> Deployment`.
+After completing these steps, files in your local project directory will be automatically uploaded to the corresponding 
+directory on the remote cluster. To customize which files are uploaded and when uploads occur, go to `Settings -> Build, 
+Execution, Deployment -> Deployment -> Options`. To download files from the remote cluster, go to `Tools -> Deployment`.
 
 ## Jupyter Notebook
 
+Jupyter Notebook can be run on either a login node or a compute node. Read [this section](https://training.sharcnet.ca/courses/mod/lesson/view.php?id=452&pageid=330) 
+of the course provided by Compute Canada to review when each type of node should be used. Make sure `Jupyter` is installed
+in your virtual environment.
+
 ### Login Node
+
+To access a Jupyter Notebook running on a login node from PyCharm, follow these steps
+
+1.  SSH to the remote cluster from your local machine and activate the virtual environment in your project directory.
+2.  Start a Jupyter server on the remote cluster without opening a browser by running
+
+    ```bash
+    jupyter notebook --no-browser --port=8888
+    ```
+    
+    Then copy the token that appears after ` http://localhost:8888/tree?token=`. You can use a different port number if 
+    you prefer.
+3.  In a terminal on your local machine, set up local port forwarding by running
+
+    ```bash
+    ssh -L 8888:localhost:8888 USERNAME@nibi.alliancecan.ca
+    ```
+    
+    This will start a remote shell, and take connections to port `8888` on your local machine and forward them 
+    through SSH to port `8888` on the remote machine. If you only want the SSH tunnel and do not want a remote shell, use
+
+    ```bash
+    ssh -N -L 8888:localhost:8888 USERNAME@nibi.alliancecan.ca
+    ```
+    
+    where `-N` tells SSH not to start a remote shell and to perform only port forwarding.
+
+4.  Navigate to `Settings -> Jupyter -> Jupyter Servers`. In the `Servers` column, select `External Server Notebook/Lab`.
+    Set the `Server URL` to `http://localhost:8888`, replacing `8888` with the local port used for SSH port forwarding if
+    necessary. Select `Notebook/Lab` as the server type, and paste the token into the `Token/Password` field. These steps 
+    basically tell PyCharm to connect to a Jupyter server through port `8888` on the local machine and authenticate with
+    the token given. Because local port forwarding has already been configured, connections to this port are forwarded 
+    through SSH to port `8888` on the remote cluster, where the Jupyter server is running.
+
+To terminate the running Jupyter Notebook server, press `Ctrl+C` in the remote shell where the server is running, then 
+confirm the shutdown when prompted.
