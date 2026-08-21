@@ -237,7 +237,7 @@ in your virtual environment.
 
 ### Login Node
 
-To access a Jupyter Notebook running on a login node from PyCharm, follow these steps
+To access a Jupyter notebook running on a login node from PyCharm, follow these steps
 
 1.  SSH to the remote cluster from your local machine and activate the virtual environment in your project directory.
 2.  Start a Jupyter server on the remote cluster without opening a browser by running
@@ -270,5 +270,16 @@ To access a Jupyter Notebook running on a login node from PyCharm, follow these 
     the token given. Because local port forwarding has already been configured, connections to this port are forwarded 
     through SSH to port `8888` on the remote cluster, where the Jupyter server is running.
 
-To terminate the running Jupyter Notebook server, press `Ctrl+C` in the remote shell where the server is running, then 
-confirm the shutdown when prompted.
+To terminate a running Jupyter server, press `Ctrl+C` in the remote shell where the server is running, then 
+confirm the shutdown when prompted. If you started a server and later lost the remote shell in which it was running (this 
+can happen when Compute Canada logs you out after a period of inactivity), you can list the running Jupyter servers with
+
+```bash
+jupyter notebook list
+```
+
+Then, stop the server running on a specific port, for example port `8888`, with
+
+```bash
+jupyter notebook stop 8888
+```
