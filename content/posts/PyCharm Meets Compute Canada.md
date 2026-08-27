@@ -19,7 +19,7 @@ then follow [this tutorial](https://docs.alliancecan.ca/wiki/Multifactor_authent
 the basics. A valid Compute Canada account is required to access this course.
 
 - On the [CCDB portal](https://ccdb.alliancecan.ca), navigate to `Resources -> Access Systems` and require access to the 
-HPC servers you want to use. A valid Compute Canada account is required to access the portal.
+HPC clusters you want to use. A valid Compute Canada account is required to access the portal.
 
 - Navigate to `.ssh/` directory in your `\home` directory by running `cd ~/.ssh/` in terminal.
   - If you see two files with names such as `id_KeyType` and `id_KeyType.pub`, where `KeyType` might be `rsa`, `ed25519`,
@@ -29,7 +29,7 @@ HPC servers you want to use. A valid Compute Canada account is required to acces
 - View the public key (the file ending in `.pub`) by running `cat id_KeyType.pub`, then copy its contents. On the CCDB
 portal, navigate to `My Account -> SSH Keys` and paste the public key there.
 
-After completing these steps, you should be able to access Compute Canada HPC servers from a terminal by running
+After completing these steps, you should be able to access Compute Canada HPC clusters from a terminal by running
 
 ```bash
 ssh username@clustername.alliancecan.ca
@@ -46,9 +46,9 @@ still required to complete the login.
 
 ## Virtual Environment
 
-To create a project-specific virtual environment in the remote server, follow these steps:
+To create a project-specific virtual environment in the remote cluster, follow these steps:
 
-1.  Check which Python versions are available on the remote server by running one of the following:
+1.  Check which Python versions are available on the remote cluster by running one of the following:
 
     ```bash
     module spider python
@@ -101,7 +101,7 @@ To create a project-specific virtual environment in the remote server, follow th
     the packages provided by `scipy-stack` are visible only in the remote shell but not automatically visible to the remote 
     Python interpreter configured in PyCharm.
     
-4.  Navigate to your project directory on the remote server, creating one first if it does not already exist, then create 
+4.  Navigate to your project directory on the remote cluster, creating one first if it does not already exist, then create 
     a virtual environment named `.venv` there by running
 
     ```bash
@@ -151,42 +151,27 @@ source your_project_directory/.venv/bin/activate
 ```
 
 However, whether these two modules are loaded or not, the packages provided by `scipy-stack` module are not visible to 
-the remote interpreter configured in PyCharm, and the Python interpreter in the virtual environment will have version 3.10.13. 
+the remote interpreter configured in PyCharm, and the Python interpreter in the virtual environment will have version 3.10.13.
 See [this tutorial](https://docs.alliancecan.ca/wiki/Python) for more details on creating and using a virtual environment on Compute Canada clusters.
-
-<!--
-load the same modules used to create it then reactivate it from the project directory. For example, if modules `python/3.10.13` 
-and `scipy-stack/2025a` were loaded when created the virtual environment, run
-
-```bash
-module load python/3.10.13 scipy-stack/2025a
-```
-
-before running
-
-```bash
-source your_project_directory/.venv/bin/activate
-```
--->
 
 ## Access Remote Interpreter
 
-To use a virtual environment located on a remote server from a local PyCharm IDE, you need to configure a remote Python 
+To use a virtual environment located on a remote cluster from a local PyCharm IDE, you need to configure a remote Python 
 interpreter via SSH. To do that in PyCharm
 
 1. Navigate to `Settings → Python → Interpreter`.
 2. Select `Add Interpreter → On SSH...`.
-3. Select `New SSH connection`, then enter your Compute Canada username and the hostname of the HPC server you want to access. 
+3. Select `New SSH connection`, then enter your Compute Canada username and the hostname of the HPC cluster you want to access. 
 For example, if your username is `USERNAME` and you want to access the Nibi cluster, enter `USERNAME` as the username and 
 `nibi.alliancecan.ca` as the host. Changing the port number is not necessary.
 
 After step 3, you will be asked to complete Duo two-factor authentication several times and will mostly likely get
 stuck at the **Introspecting SSH server** step, where you are asked to complete another Duo two-factor authentication
-but are unable to enter the passcode. This seems to be a longstanding and common issue in PyCharm when accessing a remote Python 
-interpreter on a cluster that requires Duo two-factor authentication, as discussed in [this Stack Overflow thread](https://stackoverflow.com/questions/75404321/pycharm-stuck-on-introspecting-ssh-server-because-two-factor-login-required-for).
+but are unable to enter the passcode. This seems to be a longstanding and common issue in PyCharm when accessing a Python 
+interpreter on a remote cluster that requires Duo two-factor authentication, as discussed in [this Stack Overflow thread](https://stackoverflow.com/questions/75404321/pycharm-stuck-on-introspecting-ssh-server-because-two-factor-login-required-for).
 
 The solution, as suggested in the Stack Overflow thread, is to enable multiplexing and establish a SSH connection to 
-the cluster before accessing the remote Python interpreter in PyCharm. To enable multiplexing
+the remote cluster before accessing the remote Python interpreter in PyCharm. To enable multiplexing
 
 1. Create a `config` file in the `.ssh/` directory by running
 
@@ -210,7 +195,7 @@ Host *.alliancecan.ca
 See [this tutorial](https://www.cyberciti.biz/faq/linux-unix-reuse-openssh-connection/) for more details on what these 
 SSH multiplexing options do.
 
-Once multiplexing is enabled, establish an SSH connection to the cluster in terminal, then
+Once multiplexing is enabled, establish an SSH connection to the remote cluster in terminal, then
 
 1.  Copy the path to the Python interpreter in the virtual environment. The path should look something like
 
@@ -228,6 +213,11 @@ Once multiplexing is enabled, establish an SSH connection to the cluster in term
 After completing these steps, files in your local project directory will be automatically uploaded to the corresponding 
 directory on the remote cluster. To customize which files are uploaded and when uploads occur, go to `Settings -> Build, 
 Execution, Deployment -> Deployment -> Options`. To download files from the remote cluster, go to `Tools -> Deployment`.
+
+After configuring the remote interpreter, PyCharm will remember the remote cluster and the location of the remote interpreter. 
+To reaccess the same remote interpreter in PyCharm, navigate to `Settings -> Build, Execution, Deployment -> Deployment`, 
+select the configured cluster, and click `Test Connection`. You will then be prompted to complete Duo two-factor authentication, after 
+which PyCharm will be able to access the previously configured remote interpreter.
 
 ## Jupyter Notebook
 
@@ -254,8 +244,10 @@ To access a Jupyter notebook running on a login node from PyCharm, follow these 
     ssh -L 8888:localhost:8888 USERNAME@nibi.alliancecan.ca
     ```
     
-    This will start a remote shell, and take connections to port `8888` on your local machine and forward them 
-    through SSH to port `8888` on the remote machine. If you only want the SSH tunnel and do not want a remote shell, use
+    This will start a remote shell, and take connections to port `8888` on your local machine and forward them through SSH 
+    to port `8888` on the remote login node. Here, the `localhost` is interpreted from the perspective of the remote SSH 
+    host, so it refers to the Nibi login node you connected to. If you only want the SSH tunnel and do not want a remote 
+    shell, use
 
     ```bash
     ssh -N -L 8888:localhost:8888 USERNAME@nibi.alliancecan.ca
@@ -264,11 +256,11 @@ To access a Jupyter notebook running on a login node from PyCharm, follow these 
     where `-N` tells SSH not to start a remote shell and to perform only port forwarding.
 
 4.  Navigate to `Settings -> Jupyter -> Jupyter Servers`. In the `Servers` column, select `External Server Notebook/Lab`.
-    Set the `Server URL` to `http://localhost:8888`, replacing `8888` with the local port used for SSH port forwarding if
-    necessary. Select `Notebook/Lab` as the server type, and paste the token into the `Token/Password` field. These steps 
-    basically tell PyCharm to connect to a Jupyter server through port `8888` on the local machine and authenticate with
-    the token given. Because local port forwarding has already been configured, connections to this port are forwarded 
-    through SSH to port `8888` on the remote cluster, where the Jupyter server is running.
+    Set the `Server URL` to `http://localhost:8888`, replace `8888` with the local port used for SSH port forwarding if
+    a different port was specified. Select `Notebook/Lab` as the server type, and paste the token into the `Token/Password` 
+    field. These steps basically tell PyCharm to connect to a Jupyter server through port `8888` on the local machine and 
+    authenticate with the token given. Because local port forwarding has already been configured, connections to this port 
+    are forwarded through SSH to port `8888` on the remote cluster, where the Jupyter server is running.
 
 To terminate a running Jupyter server, press `Ctrl+C` in the remote shell where the server is running, then 
 confirm the shutdown when prompted. If you started a server and later lost the remote shell in which it was running (this 
@@ -283,3 +275,99 @@ Then, stop the server running on a specific port, for example port `8888`, with
 ```bash
 jupyter notebook stop 8888
 ```
+
+### Compute Node
+
+Before starting a Jupyter server on a compute node, you need to create an executable wrapper script in the virtual environment 
+that launches Jupyter server. To do that
+
+1.  SSH to the remote cluster from your local machine and activate the virtual environment in your project directory.
+
+2.  In the virtual environment, create a wrapper script that launches Jupyter notebook by running
+
+    ```bash
+    echo -e '#!/bin/bash\nexport JUPYTER_RUNTIME_DIR=$SLURM_TMPDIR/jupyter\njupyter notebook --ip $(hostname -f) --no-browser' > $VIRTUAL_ENV/bin/notebook.sh
+    ```
+    
+    This command essentially creates a script named `notebook.sh` in the virtual environment's `bin` directory with the
+    following content
+    
+    ```bash
+    #!/bin/bash
+    export JUPYTER_RUNTIME_DIR="$SLURM_TMPDIR/jupyter"
+    jupyter notebook --ip "$(hostname -f)" --no-browser
+    ```
+    
+    The third line of the script launches Jupyter Notebook on the current compute node without opening a browser.
+    
+3.  Make the script executable by running
+
+    ```bash
+    chmod u+x $VIRTUAL_ENV/bin/notebook.sh
+    ```
+
+To start a Jupyter server on a compute node, follow the following steps
+
+1.  SSH to the remote cluster from your local machine and activate the virtual environment in your project directory.
+
+2.  Submit an interactive job by using the `salloc` command, followed by arguments specifying which compute resources your 
+    job requires. For example, to request one task/process with two CPU cores, 1024 MB of memory per CPU core, and a maximum 
+    runtime of one hour, run
+
+    ```bash
+    salloc --time=1:0:0 \
+           --ntasks=1 \
+           --cpus-per-task=2 \
+           --mem-per-cpu=1024M \
+           --account=def-yourpi
+    ```
+    
+    To request one task/process with two CPU cores, 16 GB of system memory, one H100 GPU with 1/8th of the computing power 
+    and 10 GB GPU memory, and a maximum runtime of one hour in the Nibi cluster, run
+
+    ```bash
+    salloc --time=1:0:0 \
+           --ntasks=1 \
+           --cpus-per-task=2 \
+           --mem=16G \
+           --gpus=h100_1g.10gb:1 \
+           --account=def-yourpi
+    ```
+
+    In both examples, replace `def-yourpi` with the account associated with your supervisor or research group. See the **Available GPUs** 
+    section of [this tutorial](https://docs.alliancecan.ca/wiki/Using_GPUs_with_Slurm) for more information about the types 
+    of GPUs available on different clusters.
+
+3.  After the requested resources are granted, launch a Jupyter server by running the `notebook.sh` script created earlier
+
+    ```bash
+    $VIRTUAL_ENV/bin/notebook.sh
+    ```
+    
+    In the command output, you will see an URL with the following structure
+
+    ```text
+    http://g31.nibi.sharcnet:8888/tree?token=eb00daa859f1362b82fd65d856cba7af3fe50318c065fd80
+           └─────────┬──────────┘            └──────────────────────┬───────────────────────┘
+                hostname:port                                     token
+    ```
+    
+4.  In a terminal on your local machine, set up local port forwarding by running
+
+    ```bash
+    ssh -L 8888:g31.nibi.sharcnet:8888 username@nibi.alliancecan.ca
+    ```
+    
+    Change `hostname:port` and cluster name accordingly. This will start a remote shell, and take connections to port 
+    `8888` on your local machine and forward them through SSH to port `8888` on the compute node `g31.nibi.sharcnet`.
+    If you want to create the SSH tunnel without starting a remote shell, add the `-N` flag to the command above.
+
+5.  Follow Step 4 in the **login node** section.
+
+For more information on starting and accessing a Jupyter Notebook running on a compute node, see [this tutorial](https://docs.alliancecan.ca/wiki/JupyterNotebook).
+
+<!--
+[How to monitor jobs](https://docs.alliancecan.ca/wiki/Monitoring_jobs)
+
+[How to run jobs](https://docs.alliancecan.ca/wiki/Running_jobs)
+-->
