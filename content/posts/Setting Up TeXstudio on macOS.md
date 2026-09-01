@@ -88,8 +88,39 @@ then follow the following steps:
     `Additional Search Paths`, type `build` to both `Log File` and `PDF File` fields.
 
 After these three steps, all files generated when building the `.tex` files will be stored in the `build` directory. However, 
-this also introduced a new issue: the `Files` panel on the left kept pointing to my home directory instead of the current 
-project directory whenever I launched TeXstudio. This issue can be resolved by going to `Preferences -> General`, checking 
-the `Show Advanced Options` box in the bottom-left corner, and then unchecking the `Restore Previous Session at Startup` 
-box. This forces TeXstudio to start fresh, allowing the `Files` panel to point to the directory of the file you actually 
-open. See [this documentation](https://texstudio-org.github.io/configuration.html) for more information on configuring TeXstudio.
+this also introduced two new issues: 
+
+1.  The `Files` panel on the left side of the interface kept pointing to my home directory instead of the current project 
+    directory whenever I launched TeXstudio by opening a `.tex` file located in that project directory.
+    
+    -   This issue can be resolved by going to `Preferences -> General`, checking the `Show Advanced Options` box in the 
+        bottom-left corner, and then unchecking the `Restore Previous Session at Startup` box. This forces TeXstudio to 
+        start fresh, allowing the `Files` panel to point to the directory of the file you actually open. 
+
+2.  The TeXstudio log showed the following error when I tried to build a `.tex` file, e.g., `main.tex`, that contained 
+    references managed BibTeX.
+
+    ```text
+    Process started: bibtex "main".aux
+    I couldn't open file name `main.aux'
+    Process exited with error(s)
+    Error: Command failed with error code 1
+    ```
+    
+    As a result, all citations in the compiled PDF were displayed as `?`.
+
+    -   This issue arises from BibTeX looking for `main.aux` in the project root directory instead of `build` directory.
+        To resolve it, go to `Preferences -> Commands`, change `bibtex %.aux` in the BibTeX command to `bibtex build/%.aux`
+        so that BibTeX looks for the `.aux` file in the `build` directory.
+
+Also see [this documentation](https://texstudio-org.github.io/configuration.html) for more information on configuring TeXstudio.
+
+## Useful Tricks
+
+### `Command + left-click`
+
+I have always found Overleaf's feature of jumping to the corresponding location in the `.tex` source by double-clicking
+a word in the compiled PDF very useful. TeXstudio offers a similar, but more convenient, feature. To jump from a word in
+the compiled PDF to its corresponding location in the `.tex` source, `Command + left-click` that word in the compiled PDF.
+TeXstudio also supports the reverse. To jump from a piece of text in the `.tex` source to its corresponding location in 
+the compiled PDF, `Command + left-click` that text in the `.tex` source.
