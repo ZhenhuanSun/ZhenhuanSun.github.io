@@ -13,7 +13,7 @@ hiccups, so I figured I might as well documents them and the solutions I found f
 
 ## Installation
 
-MacTeX and TeXstudio play roles similar to a compiler and an IDE in programming. MacTeX provides the LaTex compilers, such 
+MacTeX and TeXstudio play roles similar to a compiler and an IDE in programming. MacTeX provides the LaTeX compilers, such 
 as `pdflatex`, to turn `.tex` source files into documents like PDFs, while TeXstudio provides a graphical editing environment 
 for writing, compiling, and previewing those files. To get started, first download MacTex [here](https://www.tug.org/mactex/),
 then download TexStudio [here](https://www.texstudio.org/).
@@ -62,8 +62,8 @@ solution and understanding what each command does, I came up with a slightly cle
     Replace `username` with your username. Verify the change with `ls -ld texstudio`, you should see your username listed
     as the owner and `staff` as the group.
 
-After these two steps, `TeXstudio` should be able to write into the `~/.config/texstudio` directory without triggering the 
-permission error. As a result, closing `TeXstudio` should no longer produce the error message shown earlier, and any customizations 
+After these two steps, TeXstudio should be able to write into the `~/.config/texstudio` directory without triggering the 
+permission error. As a result, closing TeXstudio should no longer produce the error message shown earlier, and any customizations 
 you make should now be saved properly.
 
 ## Messy Build Files
@@ -88,7 +88,7 @@ then follow the following steps:
     `Additional Search Paths`, type `build` to both `Log File` and `PDF File` fields.
 
 After these three steps, all files generated when building the `.tex` files will be stored in the `build` directory. However, 
-this also introduced two new issues: 
+this also introduced three new issues: 
 
 1.  The `Files` panel on the left side of the interface kept pointing to my home directory instead of the current project 
     directory whenever I launched TeXstudio by opening a `.tex` file located in that project directory.
@@ -110,8 +110,20 @@ this also introduced two new issues:
     As a result, all citations in the compiled PDF were displayed as `?`.
 
     -   This issue arises from BibTeX looking for `main.aux` in the project root directory instead of `build` directory.
-        To resolve it, go to `Preferences -> Commands`, change `bibtex %.aux` in the BibTeX command to `bibtex build/%.aux`
+        To resolve it, go to `Preferences -> Commands`, change `bibtex %.aux` in the BibTeX command to `bibtex build/%.aux`,
         so that BibTeX looks for the `.aux` file in the `build` directory.
+
+3.  The TeXstudio log showed the following error when I tried to open the compiled PDF in an external window.
+    
+    ```text
+    Process started: open "main".pdf
+    The file /your_project_directory/main.pdf does not exist.
+    Process exited with error(s)
+    ```    
+
+    -   This issue arises due to the same reason as the previous issue and shares a similar solution. Go to `Preferences -> Commands`,
+        change `open %.pdf > /dev/null` in the External PDF Viewer command to `open build/%.pdf > /dev/null`, so that TeXstudio
+        looks for the `.pdf` file in the `build` directory.
 
 Also see [this documentation](https://texstudio-org.github.io/configuration.html) for more information on configuring TeXstudio.
 
