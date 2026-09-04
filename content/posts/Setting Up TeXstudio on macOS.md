@@ -98,7 +98,7 @@ this also introduced three new issues:
         start fresh, allowing the `Files` panel to point to the directory of the file you actually open. 
 
 2.  The TeXstudio log showed the following error when I tried to build a `.tex` file, e.g., `main.tex`, that contained 
-    references managed BibTeX.
+    references managed by BibTeX.
 
     ```text
     Process started: bibtex "main".aux
@@ -107,13 +107,15 @@ this also introduced three new issues:
     Error: Command failed with error code 1
     ```
     
-    As a result, all citations in the compiled PDF were displayed as `?`.
+    A similar error can occur when references are managed by Biber. When such an error occurs, all citations in the compiled 
+    PDF were displayed as ?.
 
-    -   This issue arises from BibTeX looking for `main.aux` in the project root directory instead of `build` directory.
-        To resolve it, go to `Preferences -> Commands`, change `bibtex %.aux` in the BibTeX command to `bibtex build/%.aux`,
-        so that BibTeX looks for the `.aux` file in the `build` directory.
+    -   This issue arises from BibTeX/Biber looking for the required auxiliary files in the project root directory instead 
+        of `build` directory. To resolve it, go to `Preferences -> Commands`. For BibTex, change `bibtex %.aux` to `bibtex build/%.aux`. 
+        For Biber, change `biber %` to `biber build/%`. Note that if you use Biber to manage your bibliography, you need 
+        to go to `Preferences -> Build` and change the `Default Bibliography Tool` to `Biber`.
 
-3.  The TeXstudio log showed the following error when I tried to open the compiled PDF in an external window.
+3.  The TeXstudio log showed the following error when I tried to open a compiled PDF, e.g., `main.pdf`, in an external window.
     
     ```text
     Process started: open "main".pdf
