@@ -4,6 +4,7 @@ title: "PyCharm Meets Compute Canada"
 summary: "This guide walks through how to use PyCharm IDE with Compute Canada."
 date: 2026-08-21
 ShowToc: true
+TocOpen: true
 ---
 
 This guide walks through how to use PyCharm IDE with [Compute Canada](https://docs.alliancecan.ca/wiki/Getting_started) 
@@ -175,25 +176,25 @@ the remote cluster before accessing the remote Python interpreter in PyCharm. To
 
 1. Create a `config` file in the `.ssh/` directory by running
 
-```bash
-touch ~/.ssh/config
-chmod 600 ~/.ssh/config
-```
+    ```bash
+    touch ~/.ssh/config
+    chmod 600 ~/.ssh/config
+    ```
 
-See [this tutorial](https://linuxize.com/post/using-the-ssh-config-file/) for more details on how to configure and use an 
-SSH `config` file. 
+    See [this tutorial](https://linuxize.com/post/using-the-ssh-config-file/) for more details on how to configure and use an 
+    SSH `config` file. 
 
 2. Add in `config` file
 
-```bash
-# Reuse an existing SSH connection when connecting to Alliance/Compute Canada hosts
-Host *.alliancecan.ca
-    ControlMaster auto
-    ControlPath ~/.ssh/control-%r@%h:%p
-```
+    ```bash
+    # Reuse an existing SSH connection when connecting to Alliance/Compute Canada hosts
+    Host *.alliancecan.ca
+        ControlMaster auto
+        ControlPath ~/.ssh/control-%r@%h:%p
+    ```
 
-See [this tutorial](https://www.cyberciti.biz/faq/linux-unix-reuse-openssh-connection/) for more details on what these 
-SSH multiplexing options do.
+    See [this tutorial](https://www.cyberciti.biz/faq/linux-unix-reuse-openssh-connection/) for more details on what these 
+    SSH multiplexing options do.
 
 Once multiplexing is enabled, establish an SSH connection to the remote cluster in terminal, then
 
@@ -365,6 +366,68 @@ To start a Jupyter server on a compute node, follow the following steps
 5.  Follow Step 4 in the **login node** section.
 
 For more information on starting and accessing a Jupyter Notebook running on a compute node, see [this tutorial](https://docs.alliancecan.ca/wiki/JupyterNotebook).
+
+#### Useful Trick 1: Re-entering an Allocated Compute Node
+
+If you are on a login node and want to return to a compute node that you have already allocated, first list your jobs by
+running `sq` in the shell. Then, find the running job’s ID, then start a shell within its allocation by running
+
+```bash
+srun --jobid=JOB_ID --overlap --pty bash
+```
+
+Replace `JOB_ID` with your job ID. The `--overlap` flag allows the new shell to share the resources allocated to the job 
+with ID `JOB_ID`. For more information on the `-overlap` flag, see [this tutorial](https://blog.oxrse.uk/blog/the--overlap-flag-in-srun/).
+After running the above command, you can check which node you are on by running `hostname -f`.
+
+#### Useful Trick 2: Finding a Running Jupyter Server
+
+The `notebook.sh` script sets the Jupyter runtime directory to a subdirectory of the Slurm job’s temporary directory:
+
+```bash
+export JUPYTER_RUNTIME_DIR="$SLURM_TMPDIR/jupyter"
+```
+
+Therefore, an ordinary `jupyter notebook list` command on the compute node may not find the server because it searches the 
+default runtime directory. To list the Jupyter servers running within the current Slurm job, run:
+
+```bash
+JUPYTER_RUNTIME_DIR="$SLURM_TMPDIR/jupyter" jupyter notebook list
+```
+
+Here, `$SLURM_TMPDIR` is the temporary directory created for the current Slurm job, and its `jupyter` subdirectory contains 
+information about the running Jupyter server. Setting `JUPYTER_RUNTIME_DIR` before the command instructs Jupyter to search 
+that directory.
+
+#### Useful Trick 3: Monitoring GPU Usage
+
+There are two tools for monitoring GPU usage on a compute node:
+- `nvidia-smi`
+- `nvtop`
+
+Running the `nvidia-smi` command in a compute node shell displays a snapshot of the GPUs visible to the current job, including 
+their models, memory usage, utilization, and active processes. To refresh this information every `k` second, run
+
+```bash
+watch -n k nvidia-smi
+```
+
+Alternatively, running `nvtop` provides an interactive interface similar to `top`/`htop`. If you are already on the compute 
+node, this interactive interface can be accessed by running `nvtop`. If you are on a login node but already have a running 
+allocation, run `nvtop` within that allocation by running
+
+```bash
+srun --jobid=JOB_ID --overlap --pty nvtop
+```
+
+Replace `JOB_ID` with the job ID shown by `sq`.
+
+Note that both tools may report GPU utilization inaccurately when Multi-Instance GPU (MIG) is enabled, that is, when you 
+choose to allocate a portion of a GPU rather than an entire GPU. See [this document](https://docs.alliancecan.ca/wiki/Multi-Instance_GPU)
+for more information about Multi-Instance GPU. In my experience, when MIG is enabled, `nvidia-smi` may display `N/A` in 
+the `Volatile GPU-Util` column, while `nvtop` may report `0%` GPU usage even when a computation is running on the GPU. However, 
+GPU memory usage may still be reported accurately, although allocated memory does not necessarily indicate active usage. 
+These monitoring features are likely to work more reliably when an entire GPU is allocated rather than an instance.
 
 <!--
 [How to monitor jobs](https://docs.alliancecan.ca/wiki/Monitoring_jobs)
