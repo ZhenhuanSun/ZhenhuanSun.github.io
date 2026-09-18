@@ -6,7 +6,10 @@ theme: ["PaperMod"]
 # Required for rendering code blocks with rounded corners.
 pygmentsUseClasses: true
 
+# More customization options can be found in https://github.com/adityatelange/hugo-PaperMod/wiki/Variables
 params:
+  description: "A place where I document what I learn along the way."
+
   ShowCodeCopyButtons: true
 
   homeInfoParams:
