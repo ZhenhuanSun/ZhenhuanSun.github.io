@@ -380,7 +380,26 @@ Replace `JOB_ID` with your job ID. The `--overlap` flag allows the new shell to 
 with ID `JOB_ID`. For more information on the `-overlap` flag, see [this tutorial](https://blog.oxrse.uk/blog/the--overlap-flag-in-srun/).
 After running the above command, you can check which node you are on by running `hostname -f`.
 
-#### Useful Trick 2: Finding a Running Jupyter Server
+#### Useful Trick 2: Canceling a Running or Pending Allocation
+
+To cancel a running or pending allocation, first list all allocations by running `sq` in the shell. Then, identify the
+job ID of the allocation you want to cancel, and run:
+
+```bash
+scancel JOB_ID
+```
+
+Replace `JOB_ID` with your job ID. You can cancel multiple allocations simultaneously by listing their job IDs, for example
+
+```bash
+scancel JOB_ID_1 JOB_ID_2 JOB_ID_3
+```
+
+This command works for both running and pending allocations. You can confirm that they have been canceled by running `sq` 
+again. Note that if you are in an existing allocation, running `exit` only closes the shell, it does not cancel the allocation.
+Thus, `scancel JOB_ID` is still needed to release the allocated CPUs, memory, and GPUs.
+
+#### Useful Trick 3: Finding a Running Jupyter Server
 
 The `notebook.sh` script sets the Jupyter runtime directory to a subdirectory of the Slurm job’s temporary directory:
 
@@ -399,7 +418,7 @@ Here, `$SLURM_TMPDIR` is the temporary directory created for the current Slurm j
 information about the running Jupyter server. Setting `JUPYTER_RUNTIME_DIR` before the command instructs Jupyter to search 
 that directory.
 
-#### Useful Trick 3: Monitoring GPU Usage
+#### Useful Trick 4: Monitoring GPU Usage
 
 There are two tools for monitoring GPU usage on a compute node:
 - `nvidia-smi`

@@ -4,7 +4,7 @@ title: "Publications"
 
 ## Preprints
 
-- **Zhenhuan Sun** and Shahrokh Valaee. [Extending Kernel Trick to Influence Functions](https://arxiv.org/abs/2605.11239). arXiv preprint, 2026.
+- **Zhenhuan Sun** and Shahrokh Valaee. [A Dual Representation of Influence Functions for Linearizable Models](https://arxiv.org/abs/2605.11239). arXiv preprint, 2026.
 
 ## Thesis
 
