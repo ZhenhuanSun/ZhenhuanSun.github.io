@@ -448,6 +448,32 @@ the `Volatile GPU-Util` column, while `nvtop` may report `0%` GPU usage even whe
 GPU memory usage may still be reported accurately, although allocated memory does not necessarily indicate active usage. 
 These monitoring features are likely to work more reliably when an entire GPU is allocated rather than an instance.
 
+#### Useful Trick 5: Downloading Files from Remote Cluster 
+
+Although PyCharm allows one to access files on a remote cluster through `Tools -> Deployment -> Browse Remote Host`,
+I found this method slow because the directory listing takes forever to load. The `scp` command provides a much faster
+way to download files from a remote cluster. For example, to download a file from Nibi cluster to your local machine's 
+`Downloads` folder, run:
+
+```bash
+scp username@nibi.alliancecan.ca:/path_to_that_file ~/Downloads/
+```
+
+To download the file into your current local directory, run:
+
+```bash
+scp username@nibi.alliancecan.ca:/path_to_that_file .
+```
+
+Add `-r` flag to download a directory and its contents:
+
+```bash
+scp -r username@nibi.alliancecan.ca:/path_to_that_directory ~/Downloads/
+```
+
+See [this tutorial](https://docs.alliancecan.ca/wiki/Transferring_data) for more information on transferring data between 
+your local machine and remote clusters.
+
 <!--
 [How to monitor jobs](https://docs.alliancecan.ca/wiki/Monitoring_jobs)
 
