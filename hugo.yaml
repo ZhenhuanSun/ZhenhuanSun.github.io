@@ -28,12 +28,18 @@ menu:
     - name: About
       url: about
       weight: 1
+
     - name: Publications
       url: publications
       weight: 2
+
+    - name: Teaching
+      url: teaching
+      weight: 3
+
     - name: CV
       url: pdfs/Curriculum_Vitae_Zhenhuan_Sun.pdf
-      weight: 3
+      weight: 4
 
 caches:
   images:
